@@ -2689,11 +2689,24 @@ SUITE(Table)
             web::json::value input_document = web::json::value::object(fields);
             utility::string_t message = input_document.serialize();
             web::json::value output_document = web::json::value::parse(message);
-            
+
             CHECK(output_document.is_object());
             CHECK(output_document.as_object().find(_XPLATSTR("DoubleProperty")) != output_document.as_object().cend());
             CHECK_EQUAL(web::json::value::value_type::Number, output_document.as_object().find(_XPLATSTR("DoubleProperty"))->second.type());
-            CHECK(output_document.as_object().find(_XPLATSTR("DoubleProperty"))->second.is_double());
+
+            double intpart;
+            double fracpart = modf(double_value, &intpart);
+            if (fracpart == 0.0)
+            {
+                // if we happen to generate a whole number, it will be reported as an integer
+                CHECK(output_document.as_object().find(_XPLATSTR("DoubleProperty"))->second.is_integer());
+            }
+            else
+            {
+                CHECK(output_document.as_object().find(_XPLATSTR("DoubleProperty"))->second.is_double());
+            }
+
+            // even if we generate a whole number, it should have the same double value
             CHECK_EQUAL(double_value, output_document.as_object().find(_XPLATSTR("DoubleProperty"))->second.as_double());
         }
     }
@@ -3534,28 +3547,28 @@ SUITE(Table)
                 azure::storage::table_query::combine_filter_conditions(
                 azure::storage::table_query::combine_filter_conditions(
                 azure::storage::table_query::combine_filter_conditions(
-                azure::storage::table_query::generate_filter_condition(_XPLATSTR("PartitionKey"), azure::storage::query_comparison_operator::equal, partition_key1), 
-                azure::storage::query_logical_operator::op_and, 
-                azure::storage::table_query::generate_filter_condition(_XPLATSTR("RowKey"), azure::storage::query_comparison_operator::greater_than_or_equal, _XPLATSTR("k"))), 
-                azure::storage::query_logical_operator::op_and, 
-                azure::storage::table_query::generate_filter_condition(_XPLATSTR("RowKey"), azure::storage::query_comparison_operator::less_than, _XPLATSTR("n"))), 
-                azure::storage::query_logical_operator::op_and, 
-                azure::storage::table_query::generate_filter_condition(_XPLATSTR("Timestamp"), azure::storage::query_comparison_operator::greater_than_or_equal, utility::datetime::from_string(_XPLATSTR("2013-09-01T00:00:00Z"), utility::datetime::ISO_8601))), 
-                azure::storage::query_logical_operator::op_and, 
+                azure::storage::table_query::generate_filter_condition(_XPLATSTR("PartitionKey"), azure::storage::query_comparison_operator::equal, partition_key1),
+                azure::storage::query_logical_operator::op_and,
+                azure::storage::table_query::generate_filter_condition(_XPLATSTR("RowKey"), azure::storage::query_comparison_operator::greater_than_or_equal, _XPLATSTR("k"))),
+                azure::storage::query_logical_operator::op_and,
+                azure::storage::table_query::generate_filter_condition(_XPLATSTR("RowKey"), azure::storage::query_comparison_operator::less_than, _XPLATSTR("n"))),
+                azure::storage::query_logical_operator::op_and,
+                azure::storage::table_query::generate_filter_condition(_XPLATSTR("Timestamp"), azure::storage::query_comparison_operator::greater_than_or_equal, utility::datetime::from_string(_XPLATSTR("2013-09-01T00:00:00Z"), utility::datetime::ISO_8601))),
+                azure::storage::query_logical_operator::op_and,
                 azure::storage::table_query::generate_filter_condition(_XPLATSTR("PropertyA"), azure::storage::query_comparison_operator::not_equal, false)),
-                azure::storage::query_logical_operator::op_and, 
+                azure::storage::query_logical_operator::op_and,
                 azure::storage::table_query::generate_filter_condition(_XPLATSTR("PropertyB"), azure::storage::query_comparison_operator::not_equal, 1234567890)),
-                azure::storage::query_logical_operator::op_and, 
+                azure::storage::query_logical_operator::op_and,
                 azure::storage::table_query::generate_filter_condition(_XPLATSTR("PropertyC"), azure::storage::query_comparison_operator::not_equal, (int64_t)1234567890123456789LL)),
-                azure::storage::query_logical_operator::op_and, 
+                azure::storage::query_logical_operator::op_and,
                 azure::storage::table_query::generate_filter_condition(_XPLATSTR("PropertyD"), azure::storage::query_comparison_operator::not_equal, 9.1234567890123456789)),
-                azure::storage::query_logical_operator::op_and, 
+                azure::storage::query_logical_operator::op_and,
                 azure::storage::table_query::generate_filter_condition(_XPLATSTR("PropertyE"), azure::storage::query_comparison_operator::not_equal, _XPLATSTR("ABCDE12345"))),
-                azure::storage::query_logical_operator::op_and, 
+                azure::storage::query_logical_operator::op_and,
                 azure::storage::table_query::generate_filter_condition(_XPLATSTR("PropertyF"), azure::storage::query_comparison_operator::not_equal, datetime_value)),
-                azure::storage::query_logical_operator::op_and, 
+                azure::storage::query_logical_operator::op_and,
                 azure::storage::table_query::generate_filter_condition(_XPLATSTR("PropertyG"), azure::storage::query_comparison_operator::not_equal, std::vector<uint8_t>(10, 'X'))),
-                azure::storage::query_logical_operator::op_and, 
+                azure::storage::query_logical_operator::op_and,
                 azure::storage::table_query::generate_filter_condition(_XPLATSTR("PropertyH"), azure::storage::query_comparison_operator::not_equal, uuid_to_use));
             query.set_filter_string(filter_string);
 
@@ -3647,28 +3660,28 @@ SUITE(Table)
                 azure::storage::table_query::combine_filter_conditions(
                 azure::storage::table_query::combine_filter_conditions(
                 azure::storage::table_query::combine_filter_conditions(
-                azure::storage::table_query::generate_filter_condition(_XPLATSTR("PartitionKey"), azure::storage::query_comparison_operator::equal, partition_key1), 
-                azure::storage::query_logical_operator::op_and, 
-                azure::storage::table_query::generate_filter_condition(_XPLATSTR("RowKey"), azure::storage::query_comparison_operator::greater_than_or_equal, _XPLATSTR("k"))), 
-                azure::storage::query_logical_operator::op_and, 
-                azure::storage::table_query::generate_filter_condition(_XPLATSTR("RowKey"), azure::storage::query_comparison_operator::less_than, _XPLATSTR("n"))), 
-                azure::storage::query_logical_operator::op_and, 
-                azure::storage::table_query::generate_filter_condition(_XPLATSTR("Timestamp"), azure::storage::query_comparison_operator::greater_than_or_equal, utility::datetime::from_string(_XPLATSTR("2013-09-01T00:00:00Z"), utility::datetime::ISO_8601))), 
-                azure::storage::query_logical_operator::op_and, 
+                azure::storage::table_query::generate_filter_condition(_XPLATSTR("PartitionKey"), azure::storage::query_comparison_operator::equal, partition_key1),
+                azure::storage::query_logical_operator::op_and,
+                azure::storage::table_query::generate_filter_condition(_XPLATSTR("RowKey"), azure::storage::query_comparison_operator::greater_than_or_equal, _XPLATSTR("k"))),
+                azure::storage::query_logical_operator::op_and,
+                azure::storage::table_query::generate_filter_condition(_XPLATSTR("RowKey"), azure::storage::query_comparison_operator::less_than, _XPLATSTR("n"))),
+                azure::storage::query_logical_operator::op_and,
+                azure::storage::table_query::generate_filter_condition(_XPLATSTR("Timestamp"), azure::storage::query_comparison_operator::greater_than_or_equal, utility::datetime::from_string(_XPLATSTR("2013-09-01T00:00:00Z"), utility::datetime::ISO_8601))),
+                azure::storage::query_logical_operator::op_and,
                 azure::storage::table_query::generate_filter_condition(_XPLATSTR("PropertyA"), azure::storage::query_comparison_operator::not_equal, false)),
-                azure::storage::query_logical_operator::op_and, 
+                azure::storage::query_logical_operator::op_and,
                 azure::storage::table_query::generate_filter_condition(_XPLATSTR("PropertyB"), azure::storage::query_comparison_operator::not_equal, 1234567890)),
-                azure::storage::query_logical_operator::op_and, 
+                azure::storage::query_logical_operator::op_and,
                 azure::storage::table_query::generate_filter_condition(_XPLATSTR("PropertyC"), azure::storage::query_comparison_operator::not_equal, (int64_t)1234567890123456789LL)),
-                azure::storage::query_logical_operator::op_and, 
+                azure::storage::query_logical_operator::op_and,
                 azure::storage::table_query::generate_filter_condition(_XPLATSTR("PropertyD"), azure::storage::query_comparison_operator::not_equal, 9.1234567890123456789)),
-                azure::storage::query_logical_operator::op_and, 
+                azure::storage::query_logical_operator::op_and,
                 azure::storage::table_query::generate_filter_condition(_XPLATSTR("PropertyE"), azure::storage::query_comparison_operator::not_equal, _XPLATSTR("ABCDE12345"))),
-                azure::storage::query_logical_operator::op_and, 
+                azure::storage::query_logical_operator::op_and,
                 azure::storage::table_query::generate_filter_condition(_XPLATSTR("PropertyF"), azure::storage::query_comparison_operator::not_equal, datetime_value)),
-                azure::storage::query_logical_operator::op_and, 
+                azure::storage::query_logical_operator::op_and,
                 azure::storage::table_query::generate_filter_condition(_XPLATSTR("PropertyG"), azure::storage::query_comparison_operator::not_equal, std::vector<uint8_t>(10, 'X'))),
-                azure::storage::query_logical_operator::op_and, 
+                azure::storage::query_logical_operator::op_and,
                 azure::storage::table_query::generate_filter_condition(_XPLATSTR("PropertyH"), azure::storage::query_comparison_operator::not_equal, uuid_to_use));
             query.set_filter_string(filter_string);
 
@@ -3821,28 +3834,28 @@ SUITE(Table)
                 azure::storage::table_query::combine_filter_conditions(
                 azure::storage::table_query::combine_filter_conditions(
                 azure::storage::table_query::combine_filter_conditions(
-                azure::storage::table_query::generate_filter_condition(_XPLATSTR("PartitionKey"), azure::storage::query_comparison_operator::equal, partition_key1), 
-                azure::storage::query_logical_operator::op_and, 
-                azure::storage::table_query::generate_filter_condition(_XPLATSTR("RowKey"), azure::storage::query_comparison_operator::greater_than_or_equal, _XPLATSTR("k"))), 
-                azure::storage::query_logical_operator::op_and, 
-                azure::storage::table_query::generate_filter_condition(_XPLATSTR("RowKey"), azure::storage::query_comparison_operator::less_than, _XPLATSTR("n"))), 
-                azure::storage::query_logical_operator::op_and, 
-                azure::storage::table_query::generate_filter_condition(_XPLATSTR("Timestamp"), azure::storage::query_comparison_operator::greater_than_or_equal, utility::datetime::from_string(_XPLATSTR("2013-09-01T00:00:00Z"), utility::datetime::ISO_8601))), 
-                azure::storage::query_logical_operator::op_and, 
+                azure::storage::table_query::generate_filter_condition(_XPLATSTR("PartitionKey"), azure::storage::query_comparison_operator::equal, partition_key1),
+                azure::storage::query_logical_operator::op_and,
+                azure::storage::table_query::generate_filter_condition(_XPLATSTR("RowKey"), azure::storage::query_comparison_operator::greater_than_or_equal, _XPLATSTR("k"))),
+                azure::storage::query_logical_operator::op_and,
+                azure::storage::table_query::generate_filter_condition(_XPLATSTR("RowKey"), azure::storage::query_comparison_operator::less_than, _XPLATSTR("n"))),
+                azure::storage::query_logical_operator::op_and,
+                azure::storage::table_query::generate_filter_condition(_XPLATSTR("Timestamp"), azure::storage::query_comparison_operator::greater_than_or_equal, utility::datetime::from_string(_XPLATSTR("2013-09-01T00:00:00Z"), utility::datetime::ISO_8601))),
+                azure::storage::query_logical_operator::op_and,
                 azure::storage::table_query::generate_filter_condition(_XPLATSTR("PropertyA"), azure::storage::query_comparison_operator::not_equal, false)),
-                azure::storage::query_logical_operator::op_and, 
+                azure::storage::query_logical_operator::op_and,
                 azure::storage::table_query::generate_filter_condition(_XPLATSTR("PropertyB"), azure::storage::query_comparison_operator::not_equal, 1234567890)),
-                azure::storage::query_logical_operator::op_and, 
+                azure::storage::query_logical_operator::op_and,
                 azure::storage::table_query::generate_filter_condition(_XPLATSTR("PropertyC"), azure::storage::query_comparison_operator::not_equal, (int64_t)1234567890123456789LL)),
-                azure::storage::query_logical_operator::op_and, 
+                azure::storage::query_logical_operator::op_and,
                 azure::storage::table_query::generate_filter_condition(_XPLATSTR("PropertyD"), azure::storage::query_comparison_operator::not_equal, 9.1234567890123456789)),
-                azure::storage::query_logical_operator::op_and, 
+                azure::storage::query_logical_operator::op_and,
                 azure::storage::table_query::generate_filter_condition(_XPLATSTR("PropertyE"), azure::storage::query_comparison_operator::not_equal, _XPLATSTR("ABCDE12345"))),
-                azure::storage::query_logical_operator::op_and, 
+                azure::storage::query_logical_operator::op_and,
                 azure::storage::table_query::generate_filter_condition(_XPLATSTR("PropertyF"), azure::storage::query_comparison_operator::not_equal, datetime_value)),
-                azure::storage::query_logical_operator::op_and, 
+                azure::storage::query_logical_operator::op_and,
                 azure::storage::table_query::generate_filter_condition(_XPLATSTR("PropertyG"), azure::storage::query_comparison_operator::not_equal, std::vector<uint8_t>(10, 'X'))),
-                azure::storage::query_logical_operator::op_and, 
+                azure::storage::query_logical_operator::op_and,
                 azure::storage::table_query::generate_filter_condition(_XPLATSTR("PropertyH"), azure::storage::query_comparison_operator::not_equal, uuid_to_use));
             query.set_filter_string(filter_string);
 
@@ -3935,28 +3948,28 @@ SUITE(Table)
                 azure::storage::table_query::combine_filter_conditions(
                 azure::storage::table_query::combine_filter_conditions(
                 azure::storage::table_query::combine_filter_conditions(
-                azure::storage::table_query::generate_filter_condition(_XPLATSTR("PartitionKey"), azure::storage::query_comparison_operator::equal, partition_key1), 
-                azure::storage::query_logical_operator::op_and, 
-                azure::storage::table_query::generate_filter_condition(_XPLATSTR("RowKey"), azure::storage::query_comparison_operator::greater_than_or_equal, _XPLATSTR("k"))), 
-                azure::storage::query_logical_operator::op_and, 
-                azure::storage::table_query::generate_filter_condition(_XPLATSTR("RowKey"), azure::storage::query_comparison_operator::less_than, _XPLATSTR("n"))), 
-                azure::storage::query_logical_operator::op_and, 
-                azure::storage::table_query::generate_filter_condition(_XPLATSTR("Timestamp"), azure::storage::query_comparison_operator::greater_than_or_equal, utility::datetime::from_string(_XPLATSTR("2013-09-01T00:00:00Z"), utility::datetime::ISO_8601))), 
-                azure::storage::query_logical_operator::op_and, 
+                azure::storage::table_query::generate_filter_condition(_XPLATSTR("PartitionKey"), azure::storage::query_comparison_operator::equal, partition_key1),
+                azure::storage::query_logical_operator::op_and,
+                azure::storage::table_query::generate_filter_condition(_XPLATSTR("RowKey"), azure::storage::query_comparison_operator::greater_than_or_equal, _XPLATSTR("k"))),
+                azure::storage::query_logical_operator::op_and,
+                azure::storage::table_query::generate_filter_condition(_XPLATSTR("RowKey"), azure::storage::query_comparison_operator::less_than, _XPLATSTR("n"))),
+                azure::storage::query_logical_operator::op_and,
+                azure::storage::table_query::generate_filter_condition(_XPLATSTR("Timestamp"), azure::storage::query_comparison_operator::greater_than_or_equal, utility::datetime::from_string(_XPLATSTR("2013-09-01T00:00:00Z"), utility::datetime::ISO_8601))),
+                azure::storage::query_logical_operator::op_and,
                 azure::storage::table_query::generate_filter_condition(_XPLATSTR("PropertyA"), azure::storage::query_comparison_operator::not_equal, false)),
-                azure::storage::query_logical_operator::op_and, 
+                azure::storage::query_logical_operator::op_and,
                 azure::storage::table_query::generate_filter_condition(_XPLATSTR("PropertyB"), azure::storage::query_comparison_operator::not_equal, 1234567890)),
-                azure::storage::query_logical_operator::op_and, 
+                azure::storage::query_logical_operator::op_and,
                 azure::storage::table_query::generate_filter_condition(_XPLATSTR("PropertyC"), azure::storage::query_comparison_operator::not_equal, (int64_t)1234567890123456789LL)),
-                azure::storage::query_logical_operator::op_and, 
+                azure::storage::query_logical_operator::op_and,
                 azure::storage::table_query::generate_filter_condition(_XPLATSTR("PropertyD"), azure::storage::query_comparison_operator::not_equal, 9.1234567890123456789)),
-                azure::storage::query_logical_operator::op_and, 
+                azure::storage::query_logical_operator::op_and,
                 azure::storage::table_query::generate_filter_condition(_XPLATSTR("PropertyE"), azure::storage::query_comparison_operator::not_equal, _XPLATSTR("ABCDE12345"))),
-                azure::storage::query_logical_operator::op_and, 
+                azure::storage::query_logical_operator::op_and,
                 azure::storage::table_query::generate_filter_condition(_XPLATSTR("PropertyF"), azure::storage::query_comparison_operator::not_equal, datetime_value)),
-                azure::storage::query_logical_operator::op_and, 
+                azure::storage::query_logical_operator::op_and,
                 azure::storage::table_query::generate_filter_condition(_XPLATSTR("PropertyG"), azure::storage::query_comparison_operator::not_equal, std::vector<uint8_t>(10, 'X'))),
-                azure::storage::query_logical_operator::op_and, 
+                azure::storage::query_logical_operator::op_and,
                 azure::storage::table_query::generate_filter_condition(_XPLATSTR("PropertyH"), azure::storage::query_comparison_operator::not_equal, uuid_to_use));
             query.set_filter_string(filter_string);
 

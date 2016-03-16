@@ -30,5 +30,6 @@
 #include "UnitTest++.h"
 #include "TestReporterStdout.h"
 
+#include <cmath>
 #include <thread>
 #include <math.h>
